@@ -16,6 +16,7 @@ class CrossSlider extends HTMLElement {
     this.resultBoxLeft = this.shadowRoot.querySelector('#resultImgLeft');
     this.resultBoxRight = this.shadowRoot.querySelector('#resultImgRight');
     this.initImg = this.shadowRoot.querySelectorAll('.init-img');
+    this._mousedownHandler = false;
   }
 
   animatedOnLoad(e) {
@@ -64,26 +65,36 @@ class CrossSlider extends HTMLElement {
     }, 300);
   }
 
+  handleEvt() {
+    this.box.addEventListener("mousedown", function (evt) {
+      this._mousedownHandler = true;
+      evt.stopPropagation();
+    });
+    window.addEventListener("mouseup", function (evt) {
+      this._mousedownHandler = false;
+      evt.stopPropagation();
+    });
+    box.addEventListener("touchstart", function (evt) {
+      this._mousedownHandler = true;
+      evt.stopPropagation();
+    });
+    window.addEventListener("touchend", function (evt) {
+      this._mousedownHandler = false;
+      evt.stopPropagation();
+    });
+    box.addEventListener("click", function (evt) {
+      evt.stopPropagation();
+    });
+  }
+
   handleDragStart() {
     this.box.removeEventListener('click', this.handleClick.bind(this));
-    var touchDownHandler;
     let cW = this.container.getBoundingClientRect().width;
     let cH = this.container.getBoundingClientRect().height;
 
-    this.box.addEventListener('touchstart', (e) => {
-      touchDownHandler = true;
-      e.stopPropagation();
-    });
-    this.box.addEventListener('touchend', (e) => {
-      touchDownHandler = false;
-      e.stopPropagation();
-    });
-    this.box.addEventListener('click', (e) => {
-      touchDownHandler = false;
-      e.stopPropagation();
-    });
+    handleEvt();
     this.box.addEventListener('touchmove', (e) => {
-      if (touchDownHandler) {
+      if (this._mousedownHandler) {
         this.box.removeEventListener('click', this.handleClick.bind(this));
         var position = e.touches[0].clientX;
         this.handler.style.left = position - 23 + 'px';
@@ -92,12 +103,12 @@ class CrossSlider extends HTMLElement {
         if (position < 80) {
           this.box.removeEventListener('touchmove', this.handleDragStart);
           this.resultShowRight();
-          touchDownHandler = false;
+          this._mousedownHandler = false;
         }
         if (position > this.containerW - 80) {
           this.box.removeEventListener('touchmove', this.handleDragStart);
           this.resultShowLeft();
-          touchDownHandler = false;
+          this._mousedownHandler = false;
         }
       }
       e.stopPropagation();
@@ -105,25 +116,13 @@ class CrossSlider extends HTMLElement {
   }
 
   handleMouseStart() {
-    var isMouseDown = false;
     let cW = this.container.getBoundingClientRect().width;
     let cH = this.container.getBoundingClientRect().height;
 
-    this.box.addEventListener('mousedown', (e) => {
-      isMouseDown = true;
-      e.stopPropagation();
-    });
-    this.box.addEventListener('mouseup', (e) => {
-      isMouseDown = false;
-      e.stopPropagation();
-    });
-    this.box.addEventListener('click', (e) => {
-      isMouseDown = false;
-      e.stopPropagation();
-    });
+    handleEvt();
 
     this.box.addEventListener('mousemove', (e) => {
-      if (isMouseDown) {
+      if (this._mousedownHandler) {
         this.box.removeEventListener('click', this.handleClick.bind(this));
         var position;
         position = e.clientX;
@@ -133,12 +132,12 @@ class CrossSlider extends HTMLElement {
       if (position < 80) {
         this.box.removeEventListener('mousemove', this.handleMouseStart);
         this.resultShowRight();
-        touchDownHandler = false;
+        this._mousedownHandler = false;
       }
       if (position > cW - 80) {
         this.box.removeEventListener('mousemove', this.handleMouseStart);
         this.resultShowLeft();
-        touchDownHandler = false;
+        _mousedownHandler = false;
       }
       e.stopPropagation();
     });
